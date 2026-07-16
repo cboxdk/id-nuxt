@@ -1,7 +1,7 @@
 {
   "name": "@cboxdk/id-nuxt",
-  "version": "0.1.0",
-  "description": "Nuxt module for Cbox ID — drop-in sign-in / callback / sign-out routes and session handling built on @cboxdk/id-js. Add authentication to a Nuxt app with one module entry.",
+  "version": "0.2.0",
+  "description": "Nuxt module for Cbox ID \u2014 drop-in sign-in / callback / sign-out routes and session handling built on @cboxdk/id-js. Add authentication to a Nuxt app with one module entry.",
   "type": "module",
   "license": "MIT",
   "author": "Sylvester Damgaard <sn@cbox.dk>",
@@ -47,8 +47,8 @@
     "check": "npm run prepare-types && npm run build && npm run test"
   },
   "dependencies": {
-    "@cboxdk/id-js": "^0.1.0",
-    "@cboxdk/id-vue": "^0.1.0",
+    "@cboxdk/id-js": "^0.2.0",
+    "@cboxdk/id-vue": "^0.2.0",
     "@nuxt/kit": "^3.0.0 || ^4.0.0",
     "defu": "^6.1.0",
     "h3": "^1.13.0"
