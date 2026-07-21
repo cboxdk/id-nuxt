@@ -13,6 +13,11 @@ export interface CboxSessionData {
   nonce?: string;
   redirectTo?: string;
   user?: CboxSessionUser;
+  /** The current access token, and the refresh token used to renew it. */
+  accessToken?: string;
+  refreshToken?: string;
+  /** Absolute epoch-seconds expiry of the access token, for the refresh-on-read check. */
+  expiresAt?: number;
 }
 
 /** The private runtime config this module reads server-side. */

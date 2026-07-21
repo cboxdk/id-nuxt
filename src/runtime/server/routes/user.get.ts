@@ -1,9 +1,6 @@
-import { defineEventHandler, useSession } from 'h3';
-import type { CboxSessionData, CboxSessionUser } from '../../types';
-import { cboxSessionConfig } from '../utils/client';
+import { defineEventHandler } from 'h3';
+import type { CboxSessionUser } from '../../types';
+import { resolveCboxUser } from '../utils/session';
 
-/** Return the signed-in user from the session, or null. */
-export default defineEventHandler(async (event): Promise<CboxSessionUser | null> => {
-  const session = await useSession<CboxSessionData>(event, cboxSessionConfig(event));
-  return session.data.user ?? null;
-});
+/** The signed-in user, transparently refreshing the access token when it is near expiry. */
+export default defineEventHandler((event): Promise<CboxSessionUser | null> => resolveCboxUser(event));
