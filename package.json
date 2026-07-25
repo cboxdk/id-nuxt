@@ -47,7 +47,7 @@
     "check": "npm run prepare-types && npm run build && npm run test"
   },
   "dependencies": {
-    "@cboxdk/id-js": "^0.2.0",
+    "@cboxdk/id-js": "^0.6.0",
     "@cboxdk/id-vue": "^0.2.0",
     "@nuxt/kit": "^3.0.0 || ^4.0.0",
     "defu": "^6.1.0",
