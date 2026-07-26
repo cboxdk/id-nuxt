@@ -130,6 +130,19 @@ describe('setup wiring', () => {
     });
   });
 
+  // Cbox ID only honours a post-logout return URL registered on the client, byte for
+  // byte, so the exact string has to be configurable rather than guessed from the origin.
+  it('carries a configurable post-logout redirect URI in the private runtime config', () => {
+    const { nuxt } = run({ postLogoutRedirectUri: 'https://app.test/goodbye' });
+    const priv = nuxt.options.runtimeConfig.cboxId as Record<string, unknown>;
+    expect(priv.postLogoutRedirectUri).toBe('https://app.test/goodbye');
+
+    const { nuxt: bare } = run();
+    expect((bare.options.runtimeConfig.cboxId as Record<string, unknown>).postLogoutRedirectUri).toBe(
+      '',
+    );
+  });
+
   it('keeps the client secret out of the public runtime config', () => {
     const { nuxt } = run({ clientSecret: 'super-secret' });
     const pub = JSON.stringify((nuxt.options.runtimeConfig.public as Record<string, unknown>).cboxId);

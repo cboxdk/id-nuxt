@@ -36,6 +36,8 @@ export default defineEventHandler(async (event) => {
     },
     accessToken: user.accessToken,
     refreshToken: user.refreshToken ?? undefined,
+    // Kept so /auth/sign-out can hand it back as `id_token_hint`.
+    idToken: user.idToken ?? undefined,
     expiresAt: Math.floor(Date.now() / 1000) + user.expiresIn,
     state: undefined,
     codeVerifier: undefined,

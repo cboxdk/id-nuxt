@@ -16,6 +16,8 @@ export interface CboxSessionData {
   /** The current access token, and the refresh token used to renew it. */
   accessToken?: string;
   refreshToken?: string;
+  /** The id_token, kept so sign-out can send it as `id_token_hint`. */
+  idToken?: string;
   /** Absolute epoch-seconds expiry of the access token, for the refresh-on-read check. */
   expiresAt?: number;
 }
@@ -26,6 +28,8 @@ export interface CboxRuntimeConfig {
   clientId: string;
   clientSecret: string;
   redirectUri: string;
+  /** Where Cbox ID returns people after sign-out. Must be registered on the client. */
+  postLogoutRedirectUri?: string;
   accountPath?: string;
   scopes?: string[];
   sessionPassword: string;

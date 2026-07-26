@@ -18,6 +18,14 @@ export interface ModuleOptions {
   clientSecret?: string;
   /** Your callback URL, registered on the client (or set CBOX_ID_REDIRECT_URI). */
   redirectUri?: string;
+  /**
+   * Where Cbox ID returns people after sign-out (or set CBOX_ID_POST_LOGOUT_REDIRECT_URI).
+   * It must be registered on the client as a post-logout redirect URI and match it
+   * exactly — otherwise Cbox ID drops it and the browser stops on its signed-out
+   * page. Defaults to the request origin, which only works if that exact string is
+   * the registered one.
+   */
+  postLogoutRedirectUri?: string;
   /** The instance's hosted account path. Defaults to /settings. */
   accountPath?: string;
   /** Scopes requested at login. */
@@ -88,6 +96,8 @@ export default defineNuxtModule<ModuleOptions>({
         clientId: options.clientId ?? process.env.CBOX_ID_CLIENT_ID ?? '',
         clientSecret: options.clientSecret ?? process.env.CBOX_ID_CLIENT_SECRET ?? '',
         redirectUri: options.redirectUri ?? process.env.CBOX_ID_REDIRECT_URI ?? '',
+        postLogoutRedirectUri:
+          options.postLogoutRedirectUri ?? process.env.CBOX_ID_POST_LOGOUT_REDIRECT_URI ?? '',
         accountPath: options.accountPath,
         scopes: options.scopes,
         sessionPassword: process.env.CBOX_ID_SESSION_PASSWORD ?? '',
