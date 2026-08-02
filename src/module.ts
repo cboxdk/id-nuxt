@@ -79,7 +79,10 @@ export default defineNuxtModule<ModuleOptions>({
     compatibility: { nuxt: '>=3.0.0' },
   },
   defaults: {
-    accountPath: '/settings',
+    // The self-service page. `/settings` is the organization-admin one: it redirects a
+    // non-admin to `/account` and drops `return_to`, so the link worked for admins and
+    // silently lost the return path for everyone else.
+    accountPath: '/account',
     loginPath: '/auth/sign-in',
     callbackPath: '/auth/callback',
     logoutPath: '/auth/sign-out',
