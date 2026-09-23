@@ -23,6 +23,7 @@ const calls = {
   plugins: [] as string[],
   importsDirs: [] as string[],
   components: [] as Component[],
+  imports: [] as { name: string; from: string }[],
 };
 
 vi.mock('@nuxt/kit', () => ({
@@ -32,6 +33,7 @@ vi.mock('@nuxt/kit', () => ({
   addPlugin: (p: string) => calls.plugins.push(p),
   addImportsDir: (d: string) => calls.importsDirs.push(d),
   addComponent: (c: Component) => calls.components.push(c),
+  addImports: (i: { name: string; from: string }[]) => calls.imports.push(...i),
 }));
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,6 +60,7 @@ beforeEach(() => {
   calls.plugins = [];
   calls.importsDirs = [];
   calls.components = [];
+  calls.imports = [];
 });
 
 describe('module meta & defaults', () => {
@@ -72,6 +75,9 @@ describe('module meta & defaults', () => {
       callbackPath: '/auth/callback',
       logoutPath: '/auth/sign-out',
       profilePath: '/auth/account',
+      switchOrganizationPath: '/auth/switch-organization',
+      selectOrganizationPath: '/auth/select-organization',
+      createOrganizationPath: '/auth/create-organization',
       components: true,
     });
   });
@@ -87,10 +93,13 @@ describe('setup wiring', () => {
         '/auth/callback',
         '/auth/sign-out',
         '/auth/account',
+        '/auth/switch-organization',
+        '/auth/select-organization',
+        '/auth/create-organization',
         '/api/_cbox/user',
       ]),
     );
-    expect(calls.serverHandlers).toHaveLength(5);
+    expect(calls.serverHandlers).toHaveLength(8);
   });
 
   it('adds the hydration plugin and the composables auto-import dir', () => {
@@ -101,18 +110,33 @@ describe('setup wiring', () => {
 
   it('registers the id-vue widget components from @cboxdk/id-vue', () => {
     run();
-    expect(calls.components).toHaveLength(6);
+    expect(calls.components).toHaveLength(8);
     expect(calls.components.every((c) => c.filePath === '@cboxdk/id-vue')).toBe(true);
     expect(calls.components.map((c) => c.name)).toEqual(
-      expect.arrayContaining(['CboxUserButton', 'CboxIdProvider', 'CboxSignInButton']),
+      expect.arrayContaining([
+        'CboxUserButton',
+        'CboxIdProvider',
+        'CboxSignInButton',
+        'CboxOrganizationSwitcher',
+        'CboxSupportSessionBanner',
+      ]),
     );
+  });
+
+  it('auto-imports the organization and support-session composables from @cboxdk/id-vue', () => {
+    run();
+    expect(calls.imports).toEqual([
+      { name: 'useOrganization', from: '@cboxdk/id-vue' },
+      { name: 'useSupportSession', from: '@cboxdk/id-vue' },
+    ]);
   });
 
   it('can opt out of component registration', () => {
     run({ components: false });
     expect(calls.components).toHaveLength(0);
+    expect(calls.imports).toHaveLength(0);
     // Routes and plugin are still wired.
-    expect(calls.serverHandlers).toHaveLength(5);
+    expect(calls.serverHandlers).toHaveLength(8);
     expect(calls.plugins).toHaveLength(1);
   });
 
@@ -126,6 +150,9 @@ describe('setup wiring', () => {
       loginPath: '/auth/sign-in',
       logoutPath: '/auth/sign-out',
       profilePath: '/auth/account',
+      switchOrganizationPath: '/auth/switch-organization',
+      selectOrganizationPath: '/auth/select-organization',
+      createOrganizationPath: '/auth/create-organization',
       appearance: { accent: '#0ea5e9' },
     });
   });
