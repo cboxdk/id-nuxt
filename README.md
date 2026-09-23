@@ -77,7 +77,14 @@ The module registers these routes for you:
 | `GET /auth/callback` | verifies the login and stores the session |
 | `GET /auth/sign-out` | clears the session and logs out |
 | `GET /auth/account` | redirects to the hosted profile page (accepts `?return_to=`) |
+| `GET /auth/switch-organization` | switches organization: `?org=<id>` (accepts `?redirect=`) |
+| `GET /auth/select-organization` | opens Cbox ID's hosted organization picker |
+| `GET /auth/create-organization` | opens Cbox ID's hosted "create a team" step |
 | `GET /api/_cbox/user` | the current user as JSON (used internally) |
+
+`?redirect=` must be a path on your own site (`/billing`, not `https://…` or `//…`);
+anything else lands on `/`, so the sign-in route cannot be used to bounce a freshly
+signed-in person to somebody else's site.
 
 ### Widgets
 
@@ -94,10 +101,74 @@ session, so this is the whole integration:
 ```
 
 Also available: `<CboxSignInButton>`, `<CboxSignOutButton>`, `<CboxUserProfileCard>`,
-`<CboxOrganizationBadge>`, and `<CboxIdProvider>` (for a scoped override). Their
+`<CboxOrganizationBadge>`, `<CboxOrganizationSwitcher>`, `<CboxSupportSessionBanner>`,
+and `<CboxIdProvider>` (for a scoped override), plus the auto-imported composables
+`useOrganization()` and `useSupportSession()`. Their
 "Manage account" links point at `GET /auth/account`; "Sign out" at `logoutPath`.
 Theme them with the `appearance` option (below). Set `components: false` to opt out
 and wire `@cboxdk/id-vue` yourself.
+
+### Organizations
+
+Needs a Cbox ID instance that supports organization selection (laravel-id 1.19). Drop the
+switcher in; it is already wired to the three organization routes above:
+
+```vue
+<template>
+  <header>
+    <CboxOrganizationSwitcher />
+    <CboxUserButton />
+  </header>
+</template>
+```
+
+It shows the organization the session is bound to and links to Cbox ID's hosted picker,
+which lists every organization the person is in (the current one preselected) and has a
+"create a team" step. Picking one is a new sign-in bound to it; Cbox ID already holds the
+person's session, so it normally comes straight back without a sign-in form, and the
+session is replaced with the new organization's tokens and role.
+
+**Why a link and not a list.** The session lives in one sealed cookie that already carries
+the tokens, and a browser silently drops a cookie over 4 kB — the next request then has no
+session at all. A person's list of organizations has no upper bound, so the module does not
+keep it; the hosted picker has it anyway. To switch straight to a known organization, link
+to `/auth/switch-organization?org=<id>` yourself.
+
+**A refused switch.** Someone who is not (or no longer) an active member of the
+organization comes back to the page they started from, still signed in to the organization
+they were in, with `?cbox_id_error=organization_access_denied` on the URL for you to show a
+message. A switch that comes back bound to a different organization than asked for (an
+instance that predates organization selection) is refused as an error rather than showing
+one organization's name over another's data.
+
+`useCboxUser()` carries the organization and the person's membership tier in it:
+
+```ts
+const user = useCboxUser();
+user.value?.organization; // { id, name, role } | null — role: owner | admin | developer | member | viewer
+```
+
+That tier says who may administer the **organization**. What someone may do in your app is
+the `roles` / `permissions` in their access token, checked on your server.
+
+### Support sessions
+
+A member of staff can be signed in as one of your users for a limited time, with a recorded
+reason; the tokens carry the RFC 8693 `act` claim. Put the banner at the top of your layout
+— it renders nothing in an ordinary session, and offers "End support session" (sign-out)
+in one:
+
+```vue
+<template>
+  <CboxSupportSessionBanner />
+  <NuxtPage />
+</template>
+```
+
+`useCboxUser().value?.actor` is `{ sub }` in a support session and `null` otherwise, and
+`useSupportSession()` gives you `active` to hide what a helper should never do on
+somebody's behalf. Both are fail-closed: an `act` claim that could not be read
+(`sub === null`) still counts.
 
 ### Composable
 
@@ -135,9 +206,10 @@ export default defineNuxtRouteMiddleware(() => {
 | `issuer` / `clientId` / `clientSecret` / `redirectUri` | from env | the Cbox ID connection |
 | `postLogoutRedirectUri` | request origin | where sign-out returns people; must match a **Sign-out URI** registered on the application character for character ([details](#where-sign-out-returns-people)) |
 | `scopes` | `openid profile email` | requested at login |
-| `accountPath` | `/settings` | hosted profile page path on the instance |
+| `accountPath` | `/account` | hosted profile page path on the instance |
 | `loginPath` / `callbackPath` / `logoutPath` | `/auth/*` | override the route paths |
 | `profilePath` | `/auth/account` | app route that redirects to the hosted profile |
+| `switchOrganizationPath` / `selectOrganizationPath` / `createOrganizationPath` | `/auth/*-organization` | override the organization route paths |
 | `appearance` | `{}` | widget theming (`accent`, `accentForeground`, `radius`, `fontFamily`) |
 | `components` | `true` | auto-register the `@cboxdk/id-vue` widgets globally |
 
@@ -145,7 +217,8 @@ export default defineNuxtRouteMiddleware(() => {
 
 This module handles login, session and sign-out against a Cbox ID instance. Profile
 management (password, MFA, passkeys) is hosted by the instance — link users to
-`accountPath` there. SSO/SCIM/org administration are platform capabilities of
+`accountPath` there. Choosing and creating organizations happens on the instance's hosted pages too. SSO,
+SCIM and organization administration are platform capabilities of
 [`cboxdk/laravel-id`](https://github.com/cboxdk/laravel-id), not this module.
 
 ## License
