@@ -16,7 +16,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      # Requires @cboxdk/id-js to be published to npm; until then this resolves it
-      # from the workspace if present.
+      # npm 10 (bundled with Node 20/22) crashes resolving this module's dev tree
+      # ("Cannot read properties of null (reading 'edgesOut')"); npm 11 resolves it, and
+      # release.yml already publishes with npm 11. Consumers' installs are unaffected —
+      # it is nuxt + module-builder in devDependencies that trip it.
+      - run: npm install -g npm@11
       - run: npm install
       - run: npm run build
