@@ -3,7 +3,7 @@
 All notable changes to `@cboxdk/id-nuxt` are recorded here. Earlier releases are described
 in their [GitHub releases](https://github.com/cboxdk/id-nuxt/releases).
 
-## Unreleased
+## [0.5.0] - 2026-09-24
 
 Organization selection and support sessions. **Depends on `@cboxdk/id-js` ^0.17.0 and
 `@cboxdk/id-vue` ^0.3.0** — release those first — and needs a Cbox ID instance that
