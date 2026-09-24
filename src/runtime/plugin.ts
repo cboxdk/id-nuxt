@@ -8,6 +8,9 @@ interface PublicCboxConfig {
   loginPath: string;
   logoutPath: string;
   profilePath: string;
+  switchOrganizationPath: string;
+  selectOrganizationPath: string;
+  createOrganizationPath: string;
   appearance?: CboxWidgetAppearance;
 }
 
@@ -33,6 +36,9 @@ export default defineNuxtPlugin(async (nuxtApp) => {
     signIn: config.loginPath,
     signOut: config.logoutPath,
     profile: config.profilePath,
+    switchOrganization: (id: string) => `${config.switchOrganizationPath}?org=${encodeURIComponent(id)}`,
+    selectOrganization: config.selectOrganizationPath,
+    createOrganization: config.createOrganizationPath,
   };
 
   nuxtApp.vueApp.provide(

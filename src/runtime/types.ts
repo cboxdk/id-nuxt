@@ -1,9 +1,36 @@
-/** The signed-in user we keep in the session and expose via useCboxUser(). */
+/**
+ * The signed-in user we keep in the session and expose via useCboxUser().
+ *
+ * Deliberately small: it lives in the sealed session cookie next to the tokens, and a
+ * browser drops a cookie over 4 kB without a word — the next request then has no session
+ * at all. So no `organizations` list (unbounded) and no claim set; the organization
+ * switcher links to the hosted picker instead of drawing a list.
+ */
 export interface CboxSessionUser {
   id: string;
   email: string | null;
   name: string | null;
   organizationId: string | null;
+  /**
+   * The organization the session is bound to: `org`, `org_name` and the person's
+   * membership tier there (`org_role`). Null when bound to none. Optional only because a
+   * session sealed by an earlier version of this module does not have it.
+   */
+  organization?: CboxSessionOrganization | null;
+  /**
+   * Set when a member of staff is signed in as this person — a support session (the RFC
+   * 8693 `act` claim). `sub` is null when the actor could not be read; it is still a
+   * support session.
+   */
+  actor?: { sub: string | null } | null;
+}
+
+/** The organization a session is bound to. */
+export interface CboxSessionOrganization {
+  id: string;
+  name: string | null;
+  /** `owner`, `admin`, `developer`, `member` or `viewer`; null when unknown. */
+  role: string | null;
 }
 
 /** The shape of our sealed session. */
@@ -12,6 +39,12 @@ export interface CboxSessionData {
   codeVerifier?: string;
   nonce?: string;
   redirectTo?: string;
+  /**
+   * The organization an in-flight sign-in was bound to (`organization=<id>`), handed to
+   * id-js at the callback so it refuses tokens for any other organization. Cleared by a
+   * plain sign-in, so an abandoned switch cannot leak its binding into the next one.
+   */
+  organization?: string;
   user?: CboxSessionUser;
   /** The current access token, and the refresh token used to renew it. */
   accessToken?: string;

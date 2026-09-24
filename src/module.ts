@@ -1,5 +1,6 @@
 import {
   addComponent,
+  addImports,
   addImportsDir,
   addPlugin,
   addServerHandler,
@@ -26,7 +27,7 @@ export interface ModuleOptions {
    * the registered one.
    */
   postLogoutRedirectUri?: string;
-  /** The instance's hosted account path. Defaults to /settings. */
+  /** The instance's hosted account path. Defaults to /account. */
   accountPath?: string;
   /** Scopes requested at login. */
   scopes?: string[];
@@ -41,6 +42,22 @@ export interface ModuleOptions {
    * widgets' "Manage account" links point at). Defaults to /auth/account.
    */
   profilePath?: string;
+  /**
+   * Route that switches organization: `?org=<id>` starts a sign-in bound to it
+   * (`organization=<id>`). Powers the widgets' `urls.switchOrganization`. Defaults to
+   * /auth/switch-organization.
+   */
+  switchOrganizationPath?: string;
+  /**
+   * Route that opens Cbox ID's hosted organization picker (`prompt=select_organization`),
+   * the current organization preselected. Defaults to /auth/select-organization.
+   */
+  selectOrganizationPath?: string;
+  /**
+   * Route that starts Cbox ID's hosted "create a team" step (`prompt=create_organization`).
+   * Defaults to /auth/create-organization.
+   */
+  createOrganizationPath?: string;
   /** Theming applied to the auto-provided widgets. */
   appearance?: CboxWidgetAppearance;
   /**
@@ -58,13 +75,19 @@ const WIDGET_COMPONENTS = [
   'CboxUserButton',
   'CboxUserProfileCard',
   'CboxOrganizationBadge',
+  'CboxOrganizationSwitcher',
+  'CboxSupportSessionBanner',
 ] as const;
+
+/** The `@cboxdk/id-vue` composables this module auto-imports alongside the components. */
+const WIDGET_COMPOSABLES = ['useOrganization', 'useSupportSession'] as const;
 
 /**
  * Nuxt module for Cbox ID. Wires the whole embeddable-identity story into a Nuxt app:
  *
- * - server routes for sign-in / callback / sign-out / hosted-profile redirect, backed
- *   by `@cboxdk/id-js` and a sealed h3 session;
+ * - server routes for sign-in / callback / sign-out / hosted-profile redirect and for
+ *   organization switching (switch, hosted picker, hosted create step), backed by
+ *   `@cboxdk/id-js` and a sealed h3 session;
  * - a `useCboxUser()` composable, SSR-hydrated from that session;
  * - the `@cboxdk/id-vue` widgets (`<CboxUserButton>` and friends) as global,
  *   auto-imported components, provided their context app-wide so they work with no
@@ -87,6 +110,9 @@ export default defineNuxtModule<ModuleOptions>({
     callbackPath: '/auth/callback',
     logoutPath: '/auth/sign-out',
     profilePath: '/auth/account',
+    switchOrganizationPath: '/auth/switch-organization',
+    selectOrganizationPath: '/auth/select-organization',
+    createOrganizationPath: '/auth/create-organization',
     components: true,
   },
   setup(options, nuxt) {
@@ -113,6 +139,9 @@ export default defineNuxtModule<ModuleOptions>({
         loginPath: options.loginPath,
         logoutPath: options.logoutPath,
         profilePath: options.profilePath,
+        switchOrganizationPath: options.switchOrganizationPath,
+        selectOrganizationPath: options.selectOrganizationPath,
+        createOrganizationPath: options.createOrganizationPath,
         appearance: options.appearance ?? {},
       },
     );
@@ -140,6 +169,21 @@ export default defineNuxtModule<ModuleOptions>({
       handler: resolver.resolve('./runtime/server/routes/account.get'),
     });
     addServerHandler({
+      route: options.switchOrganizationPath,
+      method: 'get',
+      handler: resolver.resolve('./runtime/server/routes/switch-organization.get'),
+    });
+    addServerHandler({
+      route: options.selectOrganizationPath,
+      method: 'get',
+      handler: resolver.resolve('./runtime/server/routes/select-organization.get'),
+    });
+    addServerHandler({
+      route: options.createOrganizationPath,
+      method: 'get',
+      handler: resolver.resolve('./runtime/server/routes/create-organization.get'),
+    });
+    addServerHandler({
       route: '/api/_cbox/user',
       method: 'get',
       handler: resolver.resolve('./runtime/server/routes/user.get'),
@@ -152,6 +196,7 @@ export default defineNuxtModule<ModuleOptions>({
       for (const name of WIDGET_COMPONENTS) {
         addComponent({ name, export: name, filePath: '@cboxdk/id-vue', mode: 'all' });
       }
+      addImports(WIDGET_COMPOSABLES.map((name) => ({ name, from: '@cboxdk/id-vue' })));
     }
   },
 });
