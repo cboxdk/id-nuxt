@@ -3,6 +3,17 @@
 All notable changes to `@cboxdk/id-nuxt` are recorded here. Earlier releases are described
 in their [GitHub releases](https://github.com/cboxdk/id-nuxt/releases).
 
+
+## [0.5.1] — prepared candidate, not published
+
+### Changes
+
+Use ID JavaScript 0.20 and Vue 0.3.1 without the temporary peer override. Module runtime is unchanged from 0.5.0.
+
+### Upgrade
+
+Install after the matching ID JavaScript and Vue packages are available. Remove the temporary nested id-vue/id-js override. Server handlers must still check live authorization and row scope.
+
 ## [0.5.0] - 2026-09-24
 
 Organization selection and support sessions. **Depends on `@cboxdk/id-js` ^0.17.0 and

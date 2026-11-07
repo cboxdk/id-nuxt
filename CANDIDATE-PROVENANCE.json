@@ -1,0 +1,9 @@
+{
+  "upstream_head": "68f7a5d3d3103a37097c43057f6cfd40a2d1ea95",
+  "upstream_branch": "main",
+  "target_version": "0.5.1",
+  "status": "unpublished candidate based on actual upstream history",
+  "source_manifest": "evidence/id-nuxt-final-source-hashes.json",
+  "publication_parent": "594db80aff1f81469ef0c4d9d86c924a0e450729",
+  "restored_public_files": []
+}
