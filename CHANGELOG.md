@@ -4,7 +4,7 @@ All notable changes to `@cboxdk/id-nuxt` are recorded here. Earlier releases are
 in their [GitHub releases](https://github.com/cboxdk/id-nuxt/releases).
 
 
-## [0.5.1] — prepared candidate, not published
+## [0.5.1] - 2026-11-07
 
 ### Changes
 
